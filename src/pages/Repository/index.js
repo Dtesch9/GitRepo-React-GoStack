@@ -1,8 +1,11 @@
 import React, { Component } from 'react';
+import { Link } from 'react-router-dom';
+import { FaRegHandPointLeft, FaSpinner } from 'react-icons/fa';
 import PropTypes from 'prop-types';
 import api from '../../services/api';
 
-// import { Container } from './styles';
+import Container from '../../components/Container';
+import { Loading, Owner, IssuesList } from './styles';
 
 export default class Repository extends Component {
   // eslint-disable-next-line react/static-property-placement
@@ -18,6 +21,7 @@ export default class Repository extends Component {
     repository: {},
     issues: [],
     loading: true,
+    back: true,
   };
 
   async componentDidMount() {
@@ -36,15 +40,64 @@ export default class Repository extends Component {
     ]);
 
     this.setState({
-      repository: repository.date,
+      repository: repository.data,
       issues: issues.data,
       loading: false,
     });
   }
 
-  render() {
-    const { repository, issues, loading } = this.state;
+  iconTrue = () => {
+    this.setState({ back: true });
+  };
 
-    return <h1>Repository:</h1>;
+  iconFalse = () => {
+    this.setState({ back: false });
+  };
+
+  render() {
+    const { repository, issues, loading, back } = this.state;
+
+    if (loading) {
+      return (
+        <Loading>
+          <FaSpinner />
+        </Loading>
+      );
+    }
+
+    return (
+      <Container>
+        <Owner icon={back}>
+          <Link
+            to="/"
+            className="button"
+            onMouseEnter={this.iconFalse}
+            onMouseLeave={this.iconTrue}
+          >
+            {back ? 'voltar' : <FaRegHandPointLeft />}
+          </Link>
+          <img src={repository.owner.avatar_url} alt={repository.owner.login} />
+          <h1>{repository.name}</h1>
+          <p>{repository.description}</p>
+        </Owner>
+
+        <IssuesList>
+          {issues.map(issue => (
+            <li key={String(issue.id)}>
+              <img src={issue.user.avatar_url} alt={issue.user.login} />
+              <div>
+                <strong>
+                  <a href={issue.html_url}>{issue.title}</a>
+                  {issue.labels.map(label => (
+                    <span key={String(label.id)}>{label.name}</span>
+                  ))}
+                </strong>
+                <p>{issue.user.login}</p>
+              </div>
+            </li>
+          ))}
+        </IssuesList>
+      </Container>
+    );
   }
 }
