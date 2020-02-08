@@ -4,10 +4,10 @@ module.exports = {
     es6: true,
   },
   extends: [
-    'plugin:react/recommended',
     'airbnb',
     'prettier',
-    'prettier/react'
+    'prettier/react',
+    'plugin:react/recommended'
   ],
   globals: {
     Atomics: 'readonly',
@@ -31,6 +31,7 @@ module.exports = {
       'warn',
       { extensions: ['.jsx', '.js'] }
     ],
-    'import/prefer-default-export': 'off'
+    'import/prefer-default-export': 'off',
+    'react/state-in-constructor': [2, 'never']
   },
 };
