@@ -5,7 +5,8 @@ import PropTypes from 'prop-types';
 import api from '../../services/api';
 
 import Container from '../../components/Container';
-import { Loading, Owner, IssuesList } from './styles';
+import Buttons from '../../components/Button';
+import { Loading, Owner, IssuesList, Filter, Button } from './styles';
 
 export default class Repository extends Component {
   // eslint-disable-next-line react/static-property-placement
@@ -22,6 +23,8 @@ export default class Repository extends Component {
     issues: [],
     loading: true,
     back: true,
+    issueFilter: 'all',
+    issuePage: 1,
   };
 
   async componentDidMount() {
@@ -33,7 +36,7 @@ export default class Repository extends Component {
       api.get(`repos/${repoName}`),
       api.get(`repos/${repoName}/issues`, {
         params: {
-          state: 'open',
+          state: 'all',
           per_page: 5,
         },
       }),
@@ -46,6 +49,55 @@ export default class Repository extends Component {
     });
   }
 
+  async componentDidUpdate(_, prevState) {
+    const { issueFilter: oldState, issuePage: oldPage } = prevState;
+    const { issueFilter: newState, issuePage: currentPage } = this.state;
+
+    if (oldState !== newState || oldPage !== currentPage) {
+      this.setIssueState();
+    }
+  }
+
+  async setIssueState() {
+    const { issueFilter: newState, issuePage } = this.state;
+    const { match } = this.props;
+
+    const repoName = decodeURIComponent(match.params.repository);
+
+    const [repository, issues] = await Promise.all([
+      api.get(`repos/${repoName}`),
+      api.get(`repos/${repoName}/issues`, {
+        params: {
+          state: `${newState}`,
+          per_page: 5,
+          page: `${issuePage}`,
+        },
+      }),
+    ]);
+
+    this.setState({
+      repository: repository.data,
+      issues: issues.data,
+    });
+  }
+
+  handlePages = e => {
+    const { issuePage: pageNumber } = this.state;
+    const page = e.target.innerHTML;
+
+    if (page === 'Prev') {
+      this.setState({ issuePage: pageNumber - 1 });
+    } else {
+      this.setState({ issuePage: pageNumber + 1 });
+    }
+  };
+
+  handleIssueState = e => {
+    const { value } = e.target;
+
+    this.setState({ issueFilter: value.toLowerCase() });
+  };
+
   iconTrue = () => {
     this.setState({ back: true });
   };
@@ -55,7 +107,7 @@ export default class Repository extends Component {
   };
 
   render() {
-    const { repository, issues, loading, back } = this.state;
+    const { repository, issues, loading, back, issuePage } = this.state;
 
     if (loading) {
       return (
@@ -81,6 +133,12 @@ export default class Repository extends Component {
           <p>{repository.description}</p>
         </Owner>
 
+        <Filter onClick={this.handleIssueState}>
+          <option value="All">Todas</option>
+          <option value="Open">Abertas</option>
+          <option value="Closed">Fechadas</option>
+        </Filter>
+
         <IssuesList>
           {issues.map(issue => (
             <li key={String(issue.id)}>
@@ -97,6 +155,19 @@ export default class Repository extends Component {
             </li>
           ))}
         </IssuesList>
+
+        <Buttons>
+          <Button
+            type="button"
+            pageOne={issuePage === 1}
+            onClick={this.handlePages}
+          >
+            Prev
+          </Button>
+          <Button type="button" onClick={this.handlePages}>
+            next
+          </Button>
+        </Buttons>
       </Container>
     );
   }

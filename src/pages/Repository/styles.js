@@ -76,6 +76,13 @@ export const Owner = styled.div`
   }
 `;
 
+export const Filter = styled.select`
+  background: #7159c1;
+  padding: 8px;
+  color: white;
+  border-radius: 4px;
+`;
+
 export const IssuesList = styled.ul`
   padding-top: 30px;
   margin-top: 30px;
@@ -130,6 +137,39 @@ export const IssuesList = styled.ul`
       margin-top: 5px;
       font-size: 12px;
       color: #999;
+    }
+  }
+`;
+
+export const Button = styled.button.attrs(props => ({
+  disabled: props.pageOne,
+}))`
+  display: flex;
+  align-items: center;
+  justify-content: center;
+
+  background: #7159c1;
+  color: white;
+  border: 2px solid #7159c1;
+  border-radius: 4px;
+
+  padding: 8px 16px;
+  font-size: 12px;
+  font-weight: 600;
+  text-transform: uppercase;
+
+  &:hover {
+    background: none;
+    color: #7159c1;
+  }
+
+  &:disabled {
+    background: gray;
+    cursor: not-allowed;
+    border-color: gray;
+
+    &:hover {
+      color: white;
     }
   }
 `;
